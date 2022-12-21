@@ -1,4 +1,3 @@
-
 # Node.js Express Web App to Linux on Azure
 # Build a Node.js Express app and deploy it to Azure as a Linux web app.
 # Add steps that analyze code, save build artifacts, deploy, and more:
@@ -10,13 +9,10 @@ trigger:
 variables:
 
   # Azure Resource Manager connection created during pipeline creation
-  azureSubscription: 'Azure v-fpolido subscription(0ac7e236-094b-4d5e-b90a-c73823ed0617)'
+  azureSubscription: 'd1e31ec4-cef3-4df6-b854-f7258b71d9fb'
 
   # Web app name
   webAppName: 'testmoodle-fred'
-
-  # Environment name
-  environmentName: 'testmoodle-fred'
 
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
@@ -62,7 +58,7 @@ stages:
   jobs:
   - deployment: Deploy
     displayName: Deploy
-    environment: $(environmentName)
+    environment: $(webAppName)
     pool:
       vmImage: $(vmImageName)
     strategy:
@@ -70,11 +66,11 @@ stages:
         deploy:
           steps:
           - task: AzureWebApp@1
-            displayName: 'Azure Web App Deploy: polidotestreact'
+            displayName: 'Azure Web App Deploy'
             inputs:
               azureSubscription: $(azureSubscription)
               appType: webAppLinux
               appName: $(webAppName)
-              runtimeStack: 'NODE|10.10'
+              runtimeStack: 'NODE|18-lts'
               package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
               startUpCommand: 'npm run start'
