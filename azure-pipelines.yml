@@ -10,7 +10,7 @@ trigger:
 variables:
 
   # Azure Resource Manager connection created during pipeline creation
-  azureSubscription: '0ac7e236-094b-4d5e-b90a-c73823ed0617'
+  azureSubscription: 'Azure v-fpolido subscription(0ac7e236-094b-4d5e-b90a-c73823ed0617)'
 
   # Web app name
   webAppName: 'testmoodle-fred'
