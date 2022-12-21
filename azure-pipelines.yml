@@ -1,76 +1,45 @@
-# Node.js Express Web App to Linux on Azure
-# Build a Node.js Express app and deploy it to Azure as a Linux web app.
+# Node.js with React
+# Build a Node.js project that uses React.
 # Add steps that analyze code, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
 
 trigger:
-- main
+- master
 
-variables:
+pool:
+  vmImage: ubuntu-latest
 
-  # Azure Resource Manager connection created during pipeline creation
-  azureSubscription: 'Azure v-fpolido subscription(0ac7e236-094b-4d5e-b90a-c73823ed0617)'
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '18.x'
+  displayName: 'Install Node.js'
 
-  # Web app name
-  webAppName: 'testmoodle-fred'
+- script: |
+    npm install
+  displayName: 'NPM install'
 
-  # Agent VM image name
-  vmImageName: 'ubuntu-latest'
+- script: |
+    npm run build
+  displayName: 'NPM build'
 
-stages:
-- stage: Build
-  displayName: Build stage
-  jobs:
-  - job: Build
-    displayName: Build
-    pool:
-      vmImage: $(vmImageName)
+- script: |
+    ls
+  displayName: 'Check directory'
 
-    steps:
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '18.x'
-      displayName: 'Install Node.js'
+- task: ArchiveFiles@2
+  displayName: 'Compress files'
+  inputs:
+    rootFolderOrFile: '$(Build.SourcesDirectory)/build'
+    includeRootFolder: true
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+    replaceExistingArchive: true
 
-    - script: |
-        npm install react react-dom
-        npm install --prefer-offline --no-audit --progress=false
-        npm run build --if-present
-        npm run test --if-present
-      displayName: 'npm install, build and test'
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Build Artifacts'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'build'
+    publishLocation: 'Container'
 
-    - task: ArchiveFiles@2
-      displayName: 'Archive files'
-      inputs:
-        rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
-        includeRootFolder: false
-        archiveType: zip
-        archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
-        replaceExistingArchive: true
-
-    - upload: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
-      artifact: drop
-
-- stage: Deploy
-  displayName: Deploy stage
-  dependsOn: Build
-  condition: succeeded()
-  jobs:
-  - deployment: Deploy
-    displayName: Deploy
-    environment: $(webAppName)
-    pool:
-      vmImage: $(vmImageName)
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - task: AzureWebApp@1
-            displayName: 'Azure Web App Deploy'
-            inputs:
-              azureSubscription: $(azureSubscription)
-              appType: webAppLinux
-              appName: $(webAppName)
-              runtimeStack: 'NODE|18-lts'
-              package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
-              startUpCommand: 'npm run start'
