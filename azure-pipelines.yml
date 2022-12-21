@@ -12,10 +12,10 @@ variables:
   azureSubscription: '530b967b-e157-4494-a75a-3c31be67f193'
 
   # Web app name
-  webAppName: 'polidotestreact'
+  webAppName: 'testmoodle-fred'
 
   # Environment name
-  environmentName: 'polidotestreact'
+  environmentName: 'testmoodle-fred'
 
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
